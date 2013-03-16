@@ -1,6 +1,6 @@
 ﻿using VoiceStreaming.Common;
 
-namespace MvcAppVoiceStreaming.App_Start
+namespace MvcAppVoiceStreaming
 {
 	public sealed class Bootstrapper : IRunnable
 	{
