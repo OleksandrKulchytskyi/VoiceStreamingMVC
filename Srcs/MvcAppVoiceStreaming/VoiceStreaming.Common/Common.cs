@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 
 namespace VoiceStreaming.Common
 {
@@ -9,7 +10,7 @@ namespace VoiceStreaming.Common
 
 	public interface IVoiceReceiver
 	{
-		void Start();
+		HttpResponseMessage Start();
 
 		void Receive();
 

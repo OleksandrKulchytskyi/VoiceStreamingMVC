@@ -39,7 +39,7 @@ namespace VoiceStreaming.Common.Infrastructure
 
 		public ContentStatus GetStatus(Guid id)
 		{
-			ContentStatus status;
+			ContentStatus status = ContentStatus.None;
 			_holder.TryGetValue(id, out status);
 			return status;
 		}
