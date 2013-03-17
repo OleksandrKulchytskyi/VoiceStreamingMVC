@@ -9,7 +9,7 @@ namespace MvcAppVoiceStreaming.Infrastructure
 	// which resolves services using the Ninject container.
 	public class NinjectDependencyScope : IDependencyScope
 	{
-		IResolutionRoot resolver;
+		private IResolutionRoot resolver;
 
 		public NinjectDependencyScope(IResolutionRoot resolver)
 		{
@@ -46,7 +46,7 @@ namespace MvcAppVoiceStreaming.Infrastructure
 	// so we derive from NinjectScope.
 	public class NinjectDependencyResolver : NinjectDependencyScope, IDependencyResolver
 	{
-		IKernel kernel;
+		private IKernel kernel;
 
 		public NinjectDependencyResolver(IKernel kernel)
 			: base(kernel)

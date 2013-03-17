@@ -10,6 +10,7 @@ namespace VoiceStreaming.Common.Infrastructure
 		public ContentManager()
 		{
 			_holder = new ConcurrentDictionary<Guid, ContentStatus>();
+			System.Diagnostics.Debug.WriteLine("ContentManager is created.");
 		}
 
 		public void Add(Guid id, ContentStatus status)

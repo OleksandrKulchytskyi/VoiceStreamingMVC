@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,11 +10,13 @@ namespace MvcAppVoiceStreaming.Controllers
 {
 	public class VoiceReceiverController : ApiController, IVoiceReceiver
 	{
-		private IContentManager _manager;
+		private IContentManager _manager = null;
+		private IContentMapper _mapper = null;
 
-		public VoiceReceiverController(IContentManager manager)
+		public VoiceReceiverController(IContentManager manager, IContentMapper mapper)
 		{
 			_manager = manager;
+			_mapper = mapper;
 		}
 
 		[ActionName("Get")]
@@ -22,31 +24,94 @@ namespace MvcAppVoiceStreaming.Controllers
 		public HttpResponseMessage Get()
 		{
 			Guid id;
-			if(!Guid.TryParse(Request.Content.ReadAsStringAsync().Result,out id))
-				throw new HttpResponseException(new HttpResponseMessage(  HttpStatusCode.NotFound));
-			return new HttpResponseMessage() { Content = new StringContent(_manager.GetStatus(id).ToString()) }; 
+			if (!Guid.TryParse(Request.Content.ReadAsStringAsync().Result, out id))
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+			return new HttpResponseMessage() { Content = new StringContent(_manager.GetStatus(id).ToString()) };
+		}
+
+		[HttpPost]
+		public HttpResponseMessage Start(string flag)
+		{
+			if (flag.Equals("start", StringComparison.OrdinalIgnoreCase))
+			{
+				Guid id = Guid.NewGuid();
+				string fullPath = string.Empty;
+				try
+				{
+					_manager.Add(id, ContentStatus.Started);
+					string root = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/Audio");
+
+					//string filename = string.Format("{0}_{1}.wav",id.ToString("N"), DateTime.Now.ToString("ddMMyyy_hh:mm:ss"));
+					string filename = string.Format("{0}.wav", id.ToString("N"));
+					fullPath = Path.Combine(root, filename);
+					_mapper.CreateMapping(id, fullPath);
+					System.Diagnostics.Debug.WriteLine(string.Format("Mapping was successfully created for: {0} {1} {2}",
+																	id, Environment.NewLine, fullPath));
+					if (File.Exists(fullPath))
+						File.Delete(fullPath);
+
+					using (FileStream fs = File.Create(fullPath))
+					{
+						System.Diagnostics.Debug.WriteLine(string.Format("File has been created: {0}", fullPath));
+					}
+				}
+				catch (IOException ex)
+				{
+					System.Diagnostics.Debug.WriteLine(string.Format("Fail to create file: {0}{1}{2}", fullPath, Environment.NewLine, ex.Message));
+				}
+
+				var retMsg = new HttpResponseMessage(HttpStatusCode.OK);
+
+				//send back to the client record id;
+				retMsg.Content = new StringContent(id.ToString());
+				return retMsg;
+			}
+			return new HttpResponseMessage(HttpStatusCode.ExpectationFailed);
 		}
 
 		[HttpPost]
 		public void Receive()
 		{
-			//this.Request.Content.ReadAsByteArrayAsync().Result;
+			string ID = GetRecordId();
+			if (string.IsNullOrEmpty(ID))
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
+			Guid id;
+			if (!Guid.TryParse(ID, out id))
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.ExpectationFailed));
+
+			byte[] buffer = null;
+			try
+			{
+				System.Diagnostics.Debug.WriteLine("Write for Id: " + id.ToString());
+				Stream audioStream = Request.Content.ReadAsStreamAsync().Result;
+				if (audioStream != null && audioStream.CanRead && _mapper.Exist(id))
+				{
+					buffer = new byte[audioStream.Length];
+					int read = audioStream.Read(buffer, 0, buffer.Length);
+					using (FileStream fs = File.Open(_mapper.GetFor(id), FileMode.Append))
+					{
+						if (fs.CanSeek)
+							fs.Seek(0, SeekOrigin.End);
+						fs.Write(buffer, 0, read);
+						fs.Flush();
+					}
+					buffer = null;
+					audioStream.Close();
+				}
+			}
+			catch (Exception ex) { }
 		}
 
-
-		[HttpPost]
-		public HttpResponseMessage Start()
+		[NonAction]
+		private string GetRecordId()
 		{
-			string msg = this.Request.Content.ReadAsStringAsync().Result;
-			if (msg.Equals("start", StringComparison.OrdinalIgnoreCase))
+			var value = Request.Headers.FirstOrDefault(x => x.Key.Equals("recordId", StringComparison.OrdinalIgnoreCase));
+			if (value.Value != null)
 			{
-				Guid id = Guid.NewGuid();
-				_manager.Add(id, ContentStatus.Started);
-				var retMsg = new HttpResponseMessage(HttpStatusCode.OK);
-				retMsg.Content = new StringContent(id.ToString());
-				return retMsg;
+				string id = value.Value.First();
+				return id;
 			}
-			return new HttpResponseMessage(HttpStatusCode.ExpectationFailed);
+			return string.Empty;
 		}
 
 		[ActionName("Stop")]
@@ -57,14 +122,23 @@ namespace MvcAppVoiceStreaming.Controllers
 			Guid id;
 			if (!Guid.TryParse(msg, out id))
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
-
-			_manager.Change(id, ContentStatus.Stopped);
+			try
+			{
+				_manager.Change(id, ContentStatus.Stopped);
+				_manager.Remove(id);
+				_mapper.Remove(id);
+			}
+			catch (Exception ex)
+			{
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.ExpectationFailed));
+			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			if (_manager != null)
-				_manager = null;
+			//if (_manager != null) _manager = null;
+
+			//if (_mapper != null) _mapper = null;
 			base.Dispose(disposing);
 		}
 	}

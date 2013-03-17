@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcAppVoiceStreaming", "Mvc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceStreaming.Common", "VoiceStreaming.Common\VoiceStreaming.Common.csproj", "{CEDC50BF-8CFE-40D4-92D8-9BFB66005CDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceStreaming.Test", "VoiceStreaming.Test\VoiceStreaming.Test.csproj", "{80C016D0-FBB2-4B26-9864-6C5721C89835}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{CEDC50BF-8CFE-40D4-92D8-9BFB66005CDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEDC50BF-8CFE-40D4-92D8-9BFB66005CDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEDC50BF-8CFE-40D4-92D8-9BFB66005CDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80C016D0-FBB2-4B26-9864-6C5721C89835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80C016D0-FBB2-4B26-9864-6C5721C89835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80C016D0-FBB2-4B26-9864-6C5721C89835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80C016D0-FBB2-4B26-9864-6C5721C89835}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

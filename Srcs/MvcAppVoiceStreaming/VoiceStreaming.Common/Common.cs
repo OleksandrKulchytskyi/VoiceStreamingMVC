@@ -10,7 +10,7 @@ namespace VoiceStreaming.Common
 
 	public interface IVoiceReceiver
 	{
-		HttpResponseMessage Start();
+		HttpResponseMessage Start(string flag);
 
 		void Receive();
 
@@ -34,5 +34,13 @@ namespace VoiceStreaming.Common
 		void Remove(Guid id);
 
 		ContentStatus GetStatus(Guid id);
+	}
+
+	public interface IContentMapper
+	{
+		void CreateMapping(Guid id, string path);
+		string GetFor(Guid id);
+		bool Exist(Guid id);
+		void Remove(Guid id);
 	}
 }

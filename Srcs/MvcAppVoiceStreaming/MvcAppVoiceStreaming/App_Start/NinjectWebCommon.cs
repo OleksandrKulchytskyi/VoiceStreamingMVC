@@ -22,6 +22,7 @@ namespace MvcAppVoiceStreaming.App_Start
 		/// </summary>
 		public static void Start()
 		{
+			System.Diagnostics.Debug.WriteLine("NinjectWebCommon.Start was invoked.");
 			DynamicModuleUtility.RegisterModule(typeof(OnePerRequestHttpModule));
 			DynamicModuleUtility.RegisterModule(typeof(NinjectHttpModule));
 			bootstrapper.Initialize(CreateKernel);
@@ -46,8 +47,8 @@ namespace MvcAppVoiceStreaming.App_Start
 			kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
 
 			RegisterServices(kernel);
-
 			System.Web.Http.GlobalConfiguration.Configuration.DependencyResolver= new Infrastructure.NinjectDependencyResolver(kernel);
+			
 			return kernel;
 		}
 
@@ -57,9 +58,12 @@ namespace MvcAppVoiceStreaming.App_Start
 		/// <param name="kernel">The kernel.</param>
 		private static void RegisterServices(IKernel kernel)
 		{
-			//kernel.Load(System.Reflection.Assembly.GetExecutingAssembly());
-			//kernel.Load(typeof(IContentManager).Assembly);
-			kernel.Bind<IContentManager>().To<ContentManager>().InSingletonScope();
+			System.Diagnostics.Debug.WriteLine("Invoked RegisterServices");
+			//kernel.Bind<IContentManager>().To<ContentManager>().InSingletonScope();
+			//kernel.Bind<IContentMapper>().To<Infrastructure.ContentMapper>().InSingletonScope();
+
+			kernel.Bind<IContentManager>().ToConstant<ContentManager>(new ContentManager());
+			kernel.Bind<IContentMapper>().ToConstant<Infrastructure.ContentMapper>(new Infrastructure.ContentMapper());
 		}
 	}
 }
