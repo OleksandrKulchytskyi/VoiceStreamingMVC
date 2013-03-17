@@ -47,7 +47,7 @@
 					rec.exportWAV(function (blob) {
 						rec.clear();
 						console.log(blob);//ws.send(blob);
-						sendVoiceData();
+						sendVoiceData(blob);
 					});
 				}, 3000);
 			}
@@ -60,17 +60,25 @@
 		// export a wav every second, so we can send it using websockets		
 	});
 
-	function sendVoiceData() {
-		$.ajax({
-			type: "POST",
-			url: "/api/VoiceReceiver/Receive",
-			headers: { "recordId": recGuid },
-			success: function (jsonStr) {
-				console.log("Data was sent.");
-			}
-		}).fail(function () {
-			console.log("Data send eas fail.");
-		});
+	function sendVoiceData(blobData) {
+		console.log("sendVoiceData");
+		console.log(blobData);
+		if (blobData != undefined) {
+			$.ajax({
+				cache:false,
+				type: "POST",
+				url: "/api/VoiceReceiver/Receive",
+				headers: { "recordId": recGuid }, //,"Content-Type": "application/octet-stream" },
+				data: blobData,
+				processData: false,
+				contentType: false,
+				success: function (jsonStr) {
+					console.log("Data was sent.");
+				}
+			}).fail(function () {
+				console.log("Data send eas fail.");
+			});
+		}
 	}
 
 	$('#export').click(function () {
