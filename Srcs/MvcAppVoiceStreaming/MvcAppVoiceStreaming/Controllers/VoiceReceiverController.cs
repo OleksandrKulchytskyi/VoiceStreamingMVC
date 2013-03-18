@@ -19,16 +19,6 @@ namespace MvcAppVoiceStreaming.Controllers
 			_mapper = mapper;
 		}
 
-		[ActionName("Get")]
-		[HttpGet()]
-		public HttpResponseMessage Get()
-		{
-			Guid id;
-			if (!Guid.TryParse(Request.Content.ReadAsStringAsync().Result, out id))
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
-			return new HttpResponseMessage() { Content = new StringContent(_manager.GetStatus(id).ToString()) };
-		}
-
 		[HttpPost]
 		public HttpResponseMessage Start(string flag)
 		{
@@ -69,6 +59,38 @@ namespace MvcAppVoiceStreaming.Controllers
 			return new HttpResponseMessage(HttpStatusCode.ExpectationFailed);
 		}
 
+		[NonAction]
+		private string GetRecordId()
+		{
+			var value = Request.Headers.FirstOrDefault(x => x.Key.Equals("recordId", StringComparison.OrdinalIgnoreCase));
+			if (value.Value != null)
+			{
+				string id = value.Value.First();
+				return id;
+			}
+			return string.Empty;
+		}
+
+		[ActionName("Stop")]
+		[HttpGet]
+		public void Stop()
+		{
+			string recId = GetRecordId();
+			Guid id;
+			if (!Guid.TryParse(recId, out id))
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
+			try
+			{
+				_manager.Change(id, ContentStatus.Stopped);
+				_manager.Remove(id);
+				_mapper.Remove(id);
+			}
+			catch (Exception ex)
+			{
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.ExpectationFailed));
+			}
+		}
+
 		[HttpPost]
 		public void Receive()
 		{
@@ -102,36 +124,14 @@ namespace MvcAppVoiceStreaming.Controllers
 			catch (Exception ex) { }
 		}
 
-		[NonAction]
-		private string GetRecordId()
+		[ActionName("Get")]
+		[HttpGet()]
+		public HttpResponseMessage Get()
 		{
-			var value = Request.Headers.FirstOrDefault(x => x.Key.Equals("recordId", StringComparison.OrdinalIgnoreCase));
-			if (value.Value != null)
-			{
-				string id = value.Value.First();
-				return id;
-			}
-			return string.Empty;
-		}
-
-		[ActionName("Stop")]
-		[HttpGet]
-		public void Stop()
-		{
-			string recId = GetRecordId();
 			Guid id;
-			if (!Guid.TryParse(recId, out id))
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
-			try
-			{
-				_manager.Change(id, ContentStatus.Stopped);
-				_manager.Remove(id);
-				_mapper.Remove(id);
-			}
-			catch (Exception ex)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.ExpectationFailed));
-			}
+			if (!Guid.TryParse(Request.Content.ReadAsStringAsync().Result, out id))
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+			return new HttpResponseMessage() { Content = new StringContent(_manager.GetStatus(id).ToString()) };
 		}
 
 		protected override void Dispose(bool disposing)
