@@ -136,9 +136,9 @@ namespace MvcAppVoiceStreaming.Controllers
 
 		protected override void Dispose(bool disposing)
 		{
-			//if (_manager != null) _manager = null;
+			if (_manager != null) _manager = null;
+			if (_mapper != null) _mapper = null;
 
-			//if (_mapper != null) _mapper = null;
 			base.Dispose(disposing);
 		}
 	}

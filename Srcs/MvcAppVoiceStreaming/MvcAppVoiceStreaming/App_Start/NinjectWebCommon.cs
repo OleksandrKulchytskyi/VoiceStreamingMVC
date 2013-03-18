@@ -9,12 +9,14 @@ namespace MvcAppVoiceStreaming.App_Start
 	using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 
 	using Ninject;
+	using Ninject.Selection;
 	using Ninject.Web.Common;
 	using VoiceStreaming.Common;
 	using VoiceStreaming.Common.Infrastructure;
 
 	public static class NinjectWebCommon
 	{
+		private const string _ApiControllerScope = "ApiControllerScope";
 		private static readonly Bootstrapper bootstrapper = new Bootstrapper();
 
 		/// <summary>
@@ -47,8 +49,8 @@ namespace MvcAppVoiceStreaming.App_Start
 			kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
 
 			RegisterServices(kernel);
-			System.Web.Http.GlobalConfiguration.Configuration.DependencyResolver= new Infrastructure.NinjectDependencyResolver(kernel);
-			
+			System.Web.Http.GlobalConfiguration.Configuration.DependencyResolver = new Infrastructure.NinjectDependencyResolver(kernel);
+
 			return kernel;
 		}
 
@@ -59,11 +61,17 @@ namespace MvcAppVoiceStreaming.App_Start
 		private static void RegisterServices(IKernel kernel)
 		{
 			System.Diagnostics.Debug.WriteLine("Invoked RegisterServices");
-			//kernel.Bind<IContentManager>().To<ContentManager>().InSingletonScope();
-			//kernel.Bind<IContentMapper>().To<Infrastructure.ContentMapper>().InSingletonScope();
+			kernel.Bind<IContentManager>().To<ContentManager>().InSingletonScope();
+			kernel.Bind<IContentMapper>().To<Infrastructure.ContentMapper>().InSingletonScope();
+			kernel.Bind<ILog>().To<Infrastructure.Logger>().InSingletonScope();
 
-			kernel.Bind<IContentManager>().ToConstant<ContentManager>(new ContentManager());
-			kernel.Bind<IContentMapper>().ToConstant<Infrastructure.ContentMapper>(new Infrastructure.ContentMapper());
+			//kernel.Bind(x => x.FromThisAssembly() .SelectAllClasses().InheritedFrom<System.Web.Http.ApiController>()
+			//	  .BindToSelf()
+			//	  .Configure(b => b.DefinesNamedScope(_ApiControllerScope)));
+			//kernel.Bind<ILog>().To<Infrastructure.Logger>().InNamedScope(_ApiControllerScope);
+
+			//kernel.Bind<IContentManager>().ToConstant<ContentManager>(new ContentManager());
+			//kernel.Bind<IContentMapper>().ToConstant<Infrastructure.ContentMapper>(new Infrastructure.ContentMapper());
 		}
 	}
 }
