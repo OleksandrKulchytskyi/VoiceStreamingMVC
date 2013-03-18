@@ -33,6 +33,10 @@
 	}
 
 	$('#record').click(function () {
+
+		$("#record").attr("disabled", "disabled");
+		$("#export").removeAttr("disabled");
+
 		$.ajax({
 			type: "POST",
 			url: "/api/VoiceReceiver/Start?flag=start",
@@ -65,7 +69,7 @@
 		console.log(blobData);
 		if (blobData != undefined) {
 			$.ajax({
-				cache:false,
+				cache: false,
 				type: "POST",
 				url: "/api/VoiceReceiver/Receive",
 				headers: { "recordId": recGuid }, //,"Content-Type": "application/octet-stream" },
@@ -82,6 +86,10 @@
 	}
 
 	$('#export').click(function () {
+
+		$("#export").attr("disabled", "disabled");
+		$("#record").removeAttr("disabled");
+
 		recGuid = undefined;
 		// first send the stop command
 		rec.stop();
