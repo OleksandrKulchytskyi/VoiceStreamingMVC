@@ -24,10 +24,11 @@ namespace VoiceStreaming.Common.Infrastructure
 
 		public void Change(Guid id, ContentStatus status)
 		{
-			if (!_holder.ContainsKey(id))
+			ContentStatus prevStatus;
+			if (!_holder.TryGetValue(id, out prevStatus))
 				throw new InvalidOperationException("Connection wasn't found.");
 
-			if (!_holder.TryUpdate(id, status, ContentStatus.None))
+			if (!_holder.TryUpdate(id, status, prevStatus))
 				throw new InvalidOperationException("Fail to update.");
 		}
 

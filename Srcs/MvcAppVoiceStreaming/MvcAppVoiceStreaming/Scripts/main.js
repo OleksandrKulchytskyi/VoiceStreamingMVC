@@ -50,18 +50,14 @@
 				intervalKey = setInterval(function () {
 					rec.exportWAV(function (blob) {
 						rec.clear();
-						console.log(blob);//ws.send(blob);
+						//console.log(blob); ws.send(blob);
 						sendVoiceData(blob);
 					});
-				}, 3000);
+				}, 2000);
 			}
 		}).fail(function () {
 			$('#message').val('Error in loading...');
 		});
-
-		//ws.send("start");
-		//$("#message").val("Click export to stop recording and analyze the input");
-		// export a wav every second, so we can send it using websockets		
 	});
 
 	function sendVoiceData(blobData) {
@@ -77,10 +73,10 @@
 				processData: false,
 				contentType: false,
 				success: function (jsonStr) {
-					console.log("Data was sent.");
+					console.log("Data has been successfully sent to backend.");
 				}
 			}).fail(function () {
-				console.log("Data send eas fail.");
+				console.log("Data send was fail.");
 			});
 		}
 	}
@@ -90,11 +86,23 @@
 		$("#export").attr("disabled", "disabled");
 		$("#record").removeAttr("disabled");
 
-		recGuid = undefined;
-		// first send the stop command
 		rec.stop();
-		//ws.send("stop");
 		clearInterval(intervalKey);
+		// first send the stop command
+		$.ajax({
+			cache: false,
+			type: "GET",
+			url: "/api/VoiceReceiver/Stop",
+			headers: { "recordId": recGuid },
+			success: function (jsonStr) {
+				console.log("Stop operation has been successfully completed.");
+			}
+		}).fail(function () {
+			console.log("Stop was fail.");
+		});
+
+		recGuid = undefined;
+
 		//ws.send("analyze");
 		$("#message").val("Recording is stopped.");
 	});

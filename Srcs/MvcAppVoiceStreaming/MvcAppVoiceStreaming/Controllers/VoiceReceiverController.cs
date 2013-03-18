@@ -118,9 +118,9 @@ namespace MvcAppVoiceStreaming.Controllers
 		[HttpGet]
 		public void Stop()
 		{
-			string msg = this.Request.Content.ReadAsStringAsync().Result;
+			string recId = GetRecordId();
 			Guid id;
-			if (!Guid.TryParse(msg, out id))
+			if (!Guid.TryParse(recId, out id))
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
 			try
 			{
