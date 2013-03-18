@@ -54,11 +54,11 @@ namespace MvcAppVoiceStreaming.Infrastructure
 
 		public void Dispose()
 		{
-			//IDisposable disposable = resolutionRoot as IDisposable;
-			//if (disposable != null)
-			//	disposable.Dispose();
+			IDisposable disposable = resolutionRoot as IDisposable;
+			if (disposable != null)
+				disposable.Dispose();
 
-			//resolutionRoot = null;
+			resolutionRoot = null;
 		}
 	}
 
@@ -77,8 +77,8 @@ namespace MvcAppVoiceStreaming.Infrastructure
 
 		public IDependencyScope BeginScope()
 		{
-			//return new NinjectDependencyScope(kernel.BeginBlock());
-			return this;
+			return new NinjectDependencyScope(kernel.BeginBlock());
+			//return this;
 		}
 	}
 }

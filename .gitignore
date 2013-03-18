@@ -90,6 +90,8 @@ AppPackages/
 
 # Others
 [Bb]in
+[Aa]udio
+[Ll]og
 [Oo]bj
 sql
 TestResults

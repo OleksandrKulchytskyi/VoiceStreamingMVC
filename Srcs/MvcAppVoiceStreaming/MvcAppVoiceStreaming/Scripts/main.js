@@ -8,7 +8,7 @@
 
 	var rec = undefined;
 	var recGuid = undefined;
-	var intervalKey = undefined;
+	var timerInvocation = 0;
 
 	navigator.getUserMedia ||
 	(navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
@@ -56,14 +56,6 @@
 				$('#message').val("Record id is: " + jsonStr);
 				rec.record();
 				console.log("Recording is started.");
-				intervalKey = setInterval(function () {
-					rec.exportWAV(function (blob) {
-						rec.clear();
-						//console.log(blob); ws.send(blob);
-						sendVoiceData(blob);
-
-					});
-				}, 1500);
 			}
 		}).fail(function () {
 			$('#message').val('Error in loading...');
@@ -71,7 +63,6 @@
 	});
 
 	function sendVoiceData(blobData) {
-		console.log("sendVoiceData");
 		console.log(blobData);
 		if (blobData != undefined) {
 			$.ajax({
@@ -81,37 +72,39 @@
 				headers: { "recordId": recGuid }, //,"Content-Type": "application/octet-stream" },
 				data: blobData,
 				processData: false,
-				contentType: false,
+				contentType: "audion/wav",
 				success: function (reponse) {
 					console.log("Data has been successfully sent to backend.");
 				}
 			}).fail(function () {
 				console.log("Data send was fail.");
+			}).always(function () {
+				$.ajax({
+					cache: false,
+					type: "GET",
+					url: "/api/VoiceReceiver/Stop",
+					headers: { "recordId": recGuid },
+					success: function (reponse) {
+						console.log("Stop operation has been successfully completed.");
+					}
+				}).fail(function () {
+					console.log("Stop was fail.");
+				});
 			});
 		}
 	}
 
 	$('#export').click(function () {
+		rec.stop();
+
 		$("#export").attr("disabled", "disabled");
 		$("#record").removeAttr("disabled");
 		$("#download").removeAttr("disabled");
 
-		rec.stop();
-		clearInterval(intervalKey);
-		// first send the stop command
-		$.ajax({
-			cache: false,
-			type: "GET",
-			url: "/api/VoiceReceiver/Stop",
-			headers: { "recordId": recGuid },
-			success: function (reponse) {
-				console.log("Stop operation has been successfully completed.");
-			}
-		}).fail(function () {
-			console.log("Stop was fail.");
+		rec.exportWAV(function (blob) {
+			rec.clear();
+			sendVoiceData(blob);
 		});
-
-		//ws.send("analyze");
 		$("#message").val("Recording is stopped.");
 	});
 

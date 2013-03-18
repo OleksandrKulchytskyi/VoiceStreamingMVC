@@ -11,13 +11,15 @@ namespace MvcAppVoiceStreaming.Controllers
 {
 	public class VoiceReceiverController : ApiController, IVoiceReceiver
 	{
-		private IContentManager _manager = null;
-		private IContentMapper _mapper = null;
+		private readonly IContentManager _manager = null;
+		private readonly IContentMapper _mapper = null;
+		private readonly ILog _logger = null;
 
-		public VoiceReceiverController(IContentManager manager, IContentMapper mapper)
+		public VoiceReceiverController(IContentManager manager, IContentMapper mapper, ILog logger)
 		{
 			_manager = manager;
 			_mapper = mapper;
+			_logger = logger;
 		}
 
 		[HttpPost]
@@ -35,19 +37,25 @@ namespace MvcAppVoiceStreaming.Controllers
 					fullPath = Path.Combine(root, filename);
 
 					_mapper.CreateMapping(id, fullPath);
+					_logger.AddMessage(LogSeverity.Info, string.Format("Created mapping for {0}, {1}", id, fullPath));
 					System.Diagnostics.Debug.WriteLine(string.Format("Mapping was successfully created for: {0} {1} {2}",
 																	id, Environment.NewLine, fullPath));
 					if (File.Exists(fullPath))
+					{
+						_logger.AddMessage(LogSeverity.Info, string.Format("File is exists {0}", fullPath));
 						File.Delete(fullPath);
+					}
 
 					using (FileStream fs = File.Create(fullPath))
 					{
 						System.Diagnostics.Debug.WriteLine(string.Format("File has been created: {0}", fullPath));
+						_logger.AddMessage(LogSeverity.Info, string.Format("File was successfully created, {0}", fullPath));
 					}
 				}
 				catch (IOException ex)
 				{
 					System.Diagnostics.Debug.WriteLine(string.Format("Fail to create file: {0}{1}{2}", fullPath, Environment.NewLine, ex.Message));
+					_logger.AddMessage(LogSeverity.Error, "IOException", ex);
 				}
 
 				var retMsg = new HttpResponseMessage(HttpStatusCode.OK);
@@ -75,9 +83,14 @@ namespace MvcAppVoiceStreaming.Controllers
 		public void Stop()
 		{
 			string recId = GetRecordId();
+			_logger.AddMessage(LogSeverity.Info, "Stop", recId);
 			Guid id;
 			if (!Guid.TryParse(recId, out id))
+			{
+				_logger.AddMessage(LogSeverity.Error, "GUID parsing was fail.");
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
+			}
+
 			try
 			{
 				_manager.Change(id, ContentStatus.Stopped);
@@ -86,6 +99,7 @@ namespace MvcAppVoiceStreaming.Controllers
 			}
 			catch (Exception ex)
 			{
+				_logger.AddMessage(LogSeverity.Error, ex.Message);
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.ExpectationFailed));
 			}
 		}
@@ -94,11 +108,18 @@ namespace MvcAppVoiceStreaming.Controllers
 		public void Receive()
 		{
 			string ID = GetRecordId();
+			_logger.AddMessage(LogSeverity.Info, ID);
 			if (string.IsNullOrEmpty(ID))
+			{
+				_logger.AddMessage(LogSeverity.Info,"RecordID value was missing in headers.");
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
+			}
 			Guid id;
 			if (!Guid.TryParse(ID, out id))
+			{
+				_logger.AddMessage(LogSeverity.Error, "GUID parsing was fail.");
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.ExpectationFailed));
+			}
 
 			try
 			{
@@ -109,18 +130,19 @@ namespace MvcAppVoiceStreaming.Controllers
 
 				if (audioStream != null && audioStream.CanRead && _mapper.Exist(id))
 				{
-					using (FileStream fs = File.Open(_mapper.GetFor(id), FileMode.Append))
+					using (FileStream fs = File.Open(_mapper.GetFor(id), FileMode.Append, FileAccess.Write))
+					using (BinaryWriter bw = new BinaryWriter(fs))
 					{
-						if (fs.CanSeek)
-							fs.Seek(0, SeekOrigin.End);
+						if (bw.BaseStream.CanSeek)
+							bw.Seek(0, SeekOrigin.End);
+						_logger.AddMessage(LogSeverity.Info, string.Format("Stream position is {0}", fs.Position));
 						audioStream.CopyTo(fs);
 						fs.Flush();
 					}
-					audioStream.Close();
 				}
 			}
-			catch (IOException ioEx) { }
-			catch (Exception ex) { }
+			catch (IOException ioEx) { _logger.AddMessage(LogSeverity.Error, "IOException", ioEx); }
+			catch (Exception ex) { _logger.AddMessage(LogSeverity.Error, "Exception", ex); }
 		}
 
 		[ActionName("getRecord")]
@@ -161,9 +183,6 @@ namespace MvcAppVoiceStreaming.Controllers
 
 		protected override void Dispose(bool disposing)
 		{
-			if (_manager != null) _manager = null;
-			if (_mapper != null) _mapper = null;
-
 			base.Dispose(disposing);
 		}
 	}

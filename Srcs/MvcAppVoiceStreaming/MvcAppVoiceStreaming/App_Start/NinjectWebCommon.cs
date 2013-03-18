@@ -58,17 +58,18 @@ namespace MvcAppVoiceStreaming.App_Start
 		private static void RegisterServices(IKernel kernel)
 		{
 			System.Diagnostics.Debug.WriteLine("Invoked RegisterServices");
-			kernel.Bind<IContentManager>().To<ContentManager>().InSingletonScope();
-			kernel.Bind<IContentMapper>().To<Infrastructure.ContentMapper>().InSingletonScope();
-			kernel.Bind<ILog>().To<Infrastructure.Logger>().InSingletonScope();
+			//kernel.Bind<IContentManager>().To<ContentManager>().InSingletonScope();
+			//kernel.Bind<IContentMapper>().To<Infrastructure.ContentMapper>().InSingletonScope();
+			//kernel.Bind<ILog>().To<Infrastructure.Logger>().InSingletonScope();
 
 			//kernel.Bind(x => x.FromThisAssembly() .SelectAllClasses().InheritedFrom<System.Web.Http.ApiController>()
 			//	  .BindToSelf()
 			//	  .Configure(b => b.DefinesNamedScope(_ApiControllerScope)));
 			//kernel.Bind<ILog>().To<Infrastructure.Logger>().InNamedScope(_ApiControllerScope);
 
-			//kernel.Bind<IContentManager>().ToConstant<ContentManager>(new ContentManager());
-			//kernel.Bind<IContentMapper>().ToConstant<Infrastructure.ContentMapper>(new Infrastructure.ContentMapper());
+			kernel.Bind<IContentManager>().ToConstant<ContentManager>(new ContentManager());
+			kernel.Bind<IContentMapper>().ToConstant<Infrastructure.ContentMapper>(new Infrastructure.ContentMapper());
+			kernel.Bind<ILog>().ToConstant<Infrastructure.Logger>(new Infrastructure.Logger());
 		}
 	}
 }
