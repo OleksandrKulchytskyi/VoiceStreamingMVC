@@ -2,8 +2,9 @@
 	ViewBag.Title = "Home Page";
 }
 @section Scripts{
-	@Scripts.Render("~/bundles/main");
-	@Scripts.Render("~/bundles/recorder");
+	@Scripts.Render("~/bundles/main")
+	@Scripts.Render("~/bundles/recorder")
+	@Scripts.Render("~/bundles/fileDownload")
 }
 @section featured {
 	<section class="featured">
@@ -64,5 +65,8 @@
 	<div>
 		<button id="record">Record</button>
 		<button id="export">Stop</button>
+	</div>
+	<div>
+		<button id="download">Download record</button>
 	</div>
 </div>

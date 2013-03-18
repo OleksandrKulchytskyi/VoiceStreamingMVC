@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web.Http;
 using VoiceStreaming.Common;
 
@@ -30,10 +31,9 @@ namespace MvcAppVoiceStreaming.Controllers
 				{
 					_manager.Add(id, ContentStatus.Started);
 					string root = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/Audio");
-
-					//string filename = string.Format("{0}_{1}.wav",id.ToString("N"), DateTime.Now.ToString("ddMMyyy_hh:mm:ss"));
 					string filename = string.Format("{0}.wav", id.ToString("N"));
 					fullPath = Path.Combine(root, filename);
+
 					_mapper.CreateMapping(id, fullPath);
 					System.Diagnostics.Debug.WriteLine(string.Format("Mapping was successfully created for: {0} {1} {2}",
 																	id, Environment.NewLine, fullPath));
@@ -51,7 +51,6 @@ namespace MvcAppVoiceStreaming.Controllers
 				}
 
 				var retMsg = new HttpResponseMessage(HttpStatusCode.OK);
-
 				//send back to the client record id;
 				retMsg.Content = new StringContent(id.ToString());
 				return retMsg;
@@ -124,9 +123,32 @@ namespace MvcAppVoiceStreaming.Controllers
 			catch (Exception ex) { }
 		}
 
-		[ActionName("Get")]
+		[ActionName("getRecord")]
+		[HttpGet]
+		public HttpResponseMessage GetRecord([FromUri] string record)
+		{
+			if (string.IsNullOrEmpty(record))
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.BadRequest));
+
+			string root = System.Web.HttpContext.Current.Server.MapPath("~/App_Data/Audio");
+			string fullPath = Path.Combine(root, Path.ChangeExtension(record.IndexOf('-') != -1 ? record.Replace("-", string.Empty) : record,
+																		"wav"));
+			if (File.Exists(fullPath))
+			{
+				HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
+				var stream = new FileStream(fullPath, FileMode.Open);
+				result.Content = new StreamContent(stream);
+				result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+				result.Content.Headers.ContentDisposition.FileName = Path.GetFileName(fullPath);
+				return result;
+			}
+			else
+				return Request.CreateResponse(HttpStatusCode.Gone);
+		}
+
+		[ActionName("GetStatus")]
 		[HttpGet()]
-		public HttpResponseMessage Get()
+		public HttpResponseMessage GetStatus()
 		{
 			Guid id;
 			if (!Guid.TryParse(Request.Content.ReadAsStringAsync().Result, out id))

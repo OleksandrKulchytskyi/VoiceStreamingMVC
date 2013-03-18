@@ -39,8 +39,10 @@
 		}
 	}
 
-	$('#record').click(function () {
+	$("#download").attr("disabled", "disabled");
 
+	$('#record').click(function () {
+		$("#download").attr("disabled", "disabled");
 		$("#record").attr("disabled", "disabled");
 		$("#export").removeAttr("disabled");
 
@@ -59,7 +61,7 @@
 						rec.clear();
 						//console.log(blob); ws.send(blob);
 						sendVoiceData(blob);
-						
+
 					});
 				}, 1500);
 			}
@@ -90,9 +92,9 @@
 	}
 
 	$('#export').click(function () {
-
 		$("#export").attr("disabled", "disabled");
 		$("#record").removeAttr("disabled");
+		$("#download").removeAttr("disabled");
 
 		rec.stop();
 		clearInterval(intervalKey);
@@ -109,10 +111,32 @@
 			console.log("Stop was fail.");
 		});
 
-		recGuid = undefined;
 		//ws.send("analyze");
 		$("#message").val("Recording is stopped.");
 	});
+
+	$("#download").click(function () {
+		$.ajax({
+			type: "GET",
+			url: "/api/VoiceReceiver/getRecord?record=" + recGuid,
+			success: fileGenerated,
+			error: fileNotGenerated
+		});
+	});
+
+	function fileGenerated(data, textStatus, jqXHR) {
+		console.log(data);
+		//this is the success callback method.  start download automatically using the plugin
+		//$.fileDownload(data.d); //returned data from webmethod goes in data.d
+		//recGuid = undefined;
+	}
+	function fileNotGenerated(jqXHR, textStatus, errorThrown) {
+		recGuid = undefined;
+		console.log("Error");
+		console.log(textStatus);
+		//this is the error callback method.  do something to handle the error
+		alert(errorThrown);
+	}
 }
 
 function update(stream) {
