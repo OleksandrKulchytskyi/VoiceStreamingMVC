@@ -136,10 +136,13 @@ namespace MvcAppVoiceStreaming.Controllers
 			if (File.Exists(fullPath))
 			{
 				HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
-				var stream = new FileStream(fullPath, FileMode.Open);
-				result.Content = new StreamContent(stream);
-				result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
-				result.Content.Headers.ContentDisposition.FileName = Path.GetFileName(fullPath);
+				using (var fs = new FileStream(fullPath, FileMode.Open))
+				{
+					result.Content = new StreamContent(fs);
+					//result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+					//result.Content.Headers.ContentDisposition.FileName = Path.GetFileName(fullPath);
+					result.Content.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
+				}
 				return result;
 			}
 			else
