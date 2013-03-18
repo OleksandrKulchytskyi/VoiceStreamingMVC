@@ -48,6 +48,16 @@
 	</li>
 </ol>
 <div>
+	@*<div>
+		<p>Select device: </p>
+		<device type="audio_capture" id="media_device"></device>
+		<input type="button" id="record_ctl_but" value="Record" disabled />
+	</div>
+	<div>
+		<device type="media" onchange="update(this.data)"></device>
+		<audio autoplay></audio>
+		<input type="file" accept="audio/*;capture=microphone">
+	</div>*@
 	<div>
 		<input id="message" type="text" />
 	</div>

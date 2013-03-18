@@ -1,8 +1,14 @@
 ﻿if (Modernizr.audio) {
 
-	var rec = null;
+	function hasGetUserMedia() {
+		// Note: Opera is unprefixed.
+		return !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
+				  navigator.mozGetUserMedia || navigator.msGetUserMedia);
+	}
+
+	var rec = undefined;
 	var recGuid = undefined;
-	var intervalKey;
+	var intervalKey = undefined;
 
 	navigator.getUserMedia ||
 	(navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
@@ -25,6 +31,7 @@
 	function callback(stream) {
 		try {
 			var context = new webkitAudioContext();
+
 			var mediaStreamSource = context.createMediaStreamSource(stream);
 			rec = new Recorder(mediaStreamSource);
 		} catch (e) {
@@ -52,8 +59,9 @@
 						rec.clear();
 						//console.log(blob); ws.send(blob);
 						sendVoiceData(blob);
+						
 					});
-				}, 2000);
+				}, 1500);
 			}
 		}).fail(function () {
 			$('#message').val('Error in loading...');
@@ -72,7 +80,7 @@
 				data: blobData,
 				processData: false,
 				contentType: false,
-				success: function (jsonStr) {
+				success: function (reponse) {
 					console.log("Data has been successfully sent to backend.");
 				}
 			}).fail(function () {
@@ -94,7 +102,7 @@
 			type: "GET",
 			url: "/api/VoiceReceiver/Stop",
 			headers: { "recordId": recGuid },
-			success: function (jsonStr) {
+			success: function (reponse) {
 				console.log("Stop operation has been successfully completed.");
 			}
 		}).fail(function () {
@@ -102,8 +110,11 @@
 		});
 
 		recGuid = undefined;
-
 		//ws.send("analyze");
 		$("#message").val("Recording is stopped.");
 	});
+}
+
+function update(stream) {
+	document.querySelector('audio').src = stream.url;
 }

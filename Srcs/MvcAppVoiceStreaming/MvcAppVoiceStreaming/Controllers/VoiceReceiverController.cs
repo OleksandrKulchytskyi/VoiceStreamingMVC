@@ -20,7 +20,7 @@ namespace MvcAppVoiceStreaming.Controllers
 		}
 
 		[HttpPost]
-		public HttpResponseMessage Start(string flag)
+		public HttpResponseMessage Start([FromUri] string flag)
 		{
 			if (flag.Equals("start", StringComparison.OrdinalIgnoreCase))
 			{
@@ -101,26 +101,26 @@ namespace MvcAppVoiceStreaming.Controllers
 			if (!Guid.TryParse(ID, out id))
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.ExpectationFailed));
 
-			byte[] buffer = null;
 			try
 			{
 				System.Diagnostics.Debug.WriteLine("Write for Id: " + id.ToString());
-				Stream audioStream = Request.Content.ReadAsStreamAsync().Result;
+				var task = Request.Content.ReadAsStreamAsync();
+				task.Wait();
+				Stream audioStream = task.Result;
+
 				if (audioStream != null && audioStream.CanRead && _mapper.Exist(id))
 				{
-					buffer = new byte[audioStream.Length];
-					int read = audioStream.Read(buffer, 0, buffer.Length);
 					using (FileStream fs = File.Open(_mapper.GetFor(id), FileMode.Append))
 					{
 						if (fs.CanSeek)
 							fs.Seek(0, SeekOrigin.End);
-						fs.Write(buffer, 0, read);
+						audioStream.CopyTo(fs);
 						fs.Flush();
 					}
-					buffer = null;
 					audioStream.Close();
 				}
 			}
+			catch (IOException ioEx) { }
 			catch (Exception ex) { }
 		}
 
