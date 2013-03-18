@@ -3,14 +3,11 @@
 
 namespace MvcAppVoiceStreaming.App_Start
 {
+	using Microsoft.Web.Infrastructure.DynamicModuleHelper;
+	using Ninject;
+	using Ninject.Web.Common;
 	using System;
 	using System.Web;
-
-	using Microsoft.Web.Infrastructure.DynamicModuleHelper;
-
-	using Ninject;
-	using Ninject.Selection;
-	using Ninject.Web.Common;
 	using VoiceStreaming.Common;
 	using VoiceStreaming.Common.Infrastructure;
 

@@ -1,8 +1,5 @@
 ﻿using log4net;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using VoiceStreaming.Common;
 
 namespace MvcAppVoiceStreaming.Infrastructure
@@ -17,7 +14,6 @@ namespace MvcAppVoiceStreaming.Infrastructure
 			log4net.Config.XmlConfigurator.Configure();
 			_logger.Info("Loger modle is initilaized.");
 		}
-
 
 		public void AddMessage(LogSeverity severity, string payload, string msg)
 		{
@@ -50,6 +46,7 @@ namespace MvcAppVoiceStreaming.Infrastructure
 					else
 						_logger.WarnFormat("{0}{1}{2}", payload, Environment.NewLine, msg);
 					break;
+
 				default:
 					break;
 			}
@@ -59,7 +56,6 @@ namespace MvcAppVoiceStreaming.Infrastructure
 		{
 			AddMessage(severity, string.Empty, msg);
 		}
-
 
 		public void AddMessage(LogSeverity severity, string payload, Exception ex)
 		{
@@ -80,6 +76,7 @@ namespace MvcAppVoiceStreaming.Infrastructure
 				case LogSeverity.Warn:
 					_logger.Warn(payload, ex);
 					break;
+
 				default:
 					break;
 			}
