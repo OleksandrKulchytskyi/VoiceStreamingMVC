@@ -9,25 +9,26 @@
 			return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
 		}
 
+		window.AudioContext ||
+		(window.AudioContext = window.mozAudioContext || window.webkitAudioContext || window.msAudioContext || window.oAudioContext);
+
 		navigator.getUserMedia ||
 		(navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
 
 		if (navigator.getUserMedia) {
-
+			//get useragent settings
 			var ua = $.browser;
 			console.log(ua);
 
 			if (ua.chrome) {
-				//navigator.getUserMedia({ video: false, audio: true}, onSuccess, onError);
-				navigator.webkitGetUserMedia({ video: false, audio: true }, function (stream) {
+					navigator.webkitGetUserMedia({ video: false, audio: true }, function (stream) {
 					try {
 						var context = new webkitAudioContext();
 						var mediaStreamSource = context.createMediaStreamSource(stream);
 						rec = new Recorder(mediaStreamSource);
-						console.log("Recorder is initialized.");
 					} catch (e) {
-						console.log(e);
-						alert(e.message);
+						console.log("webkitGetUserMedia threw exception:" + e);
+						alert("webkitGetUserMedia threw exception:" + e);
 					}
 				});
 			}
@@ -36,8 +37,31 @@
 				try {
 					navigator.mozGetUserMedia({ video: false, audio: true }, function (localMediaStream) {
 						try {
+
+							//if (!window.AudioContext) {
+							//	if (!window.webkitAudioContext) {
+							//		throw new Error('1). AudioContext not supported. :(');
+							//		return;
+							//	}
+							//	window.AudioContext = window.webkitAudioContext;
+							//	console.log("First step was success.");
+							//}
+
 							console.log("In try block.");
-							var context = new webkitAudioContext();
+							//if (typeof AudioContext == "function") {
+							//	console.log("AudioContext");
+							//	context = new AudioContext();
+							//} else if (typeof webkitAudioContext == "function") {
+							//	console.log("webkitAudioContext");
+							//	context = new webkitAudioContext();
+							//} else if (typeof mozAudioContext == "function") {
+							//	console.log("mozAudioContext");
+							//	context = new mozAudioContext();
+							//}
+							//else {
+							//	throw new Error('AudioContext not supported. :(');
+							//}
+							var context = new AudioContext();
 							var mediaStreamSource = context.createMediaStreamSource(localMediaStream);
 							rec = new Recorder(mediaStreamSource);
 							console.log("Recorder is initialized.");
