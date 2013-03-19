@@ -15,9 +15,6 @@ namespace MvcAppVoiceStreaming
 						"~/recorder.js",
 						"~/recorderWorker.js"));
 
-			bundles.Add(new ScriptBundle("~/bundles/detect").Include(
-						"~/Scripts/detect.min.js"));
-
 			bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
 						"~/Scripts/jquery-{version}.js"));
 
