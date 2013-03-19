@@ -31,7 +31,6 @@
 	function callback(stream) {
 		try {
 			var context = new webkitAudioContext();
-
 			var mediaStreamSource = context.createMediaStreamSource(stream);
 			rec = new Recorder(mediaStreamSource);
 		} catch (e) {
@@ -40,6 +39,7 @@
 	}
 
 	$("#download").attr("disabled", "disabled");
+	$("#export").attr("disabled", "disabled");
 
 	$('#record').click(function () {
 		$("#download").attr("disabled", "disabled");
@@ -49,7 +49,6 @@
 		$.ajax({
 			type: "POST",
 			url: "/api/VoiceReceiver/Start?flag=start",
-			//headers: { "UserId": uid, "AuthToken": "11111" },
 			success: function (jsonStr) {
 				console.log(jsonStr);
 				recGuid = jsonStr;
@@ -60,6 +59,18 @@
 		}).fail(function () {
 			$('#message').val('Error in loading...');
 		});
+	});
+
+	$('#export').click(function () {
+		rec.stop();
+
+		$("#export").attr("disabled", "disabled");
+
+		rec.exportWAV(function (blob) {
+			rec.clear();
+			sendVoiceData(blob);
+		});
+		$("#message").val("Recording is stopped.");
 	});
 
 	function sendVoiceData(blobData) {
@@ -74,18 +85,22 @@
 				processData: false,
 				contentType: "audion/wav",
 				success: function (reponse) {
-					console.log("Data has been successfully sent to backend.");
+					console.log("Record has been successfully sent to the backend.");
 				}
 			}).fail(function () {
-				console.log("Data send was fail.");
+				console.log("Error has occurred while sending record.");
 			}).always(function () {
+				$("#record").removeAttr("disabled");
+				console.log("Processing always callback.");
 				$.ajax({
 					cache: false,
 					type: "GET",
 					url: "/api/VoiceReceiver/Stop",
 					headers: { "recordId": recGuid },
 					success: function (reponse) {
+						console.log(recGuid);
 						console.log("Stop operation has been successfully completed.");
+						$("#download").removeAttr("disabled");
 					}
 				}).fail(function () {
 					console.log("Stop was fail.");
@@ -94,44 +109,8 @@
 		}
 	}
 
-	$('#export').click(function () {
-		rec.stop();
-
-		$("#export").attr("disabled", "disabled");
-		$("#record").removeAttr("disabled");
-		$("#download").removeAttr("disabled");
-
-		rec.exportWAV(function (blob) {
-			rec.clear();
-			sendVoiceData(blob);
-		});
-		$("#message").val("Recording is stopped.");
+	$('#download').click(function (e) {
+		e.preventDefault();
+		window.location.href = "/Home/Download?record=" + recGuid;
 	});
-
-	$("#download").click(function () {
-		$.ajax({
-			type: "GET",
-			url: "/api/VoiceReceiver/getRecord?record=" + recGuid,
-			success: fileGenerated,
-			error: fileNotGenerated
-		});
-	});
-
-	function fileGenerated(data, textStatus, jqXHR) {
-		console.log(data);
-		//this is the success callback method.  start download automatically using the plugin
-		//$.fileDownload(data.d); //returned data from webmethod goes in data.d
-		//recGuid = undefined;
-	}
-	function fileNotGenerated(jqXHR, textStatus, errorThrown) {
-		recGuid = undefined;
-		console.log("Error");
-		console.log(textStatus);
-		//this is the error callback method.  do something to handle the error
-		alert(errorThrown);
-	}
-}
-
-function update(stream) {
-	document.querySelector('audio').src = stream.url;
 }

@@ -141,7 +141,7 @@ namespace MvcAppVoiceStreaming.Controllers
 					}
 				}
 			}
-			catch (IOException ioEx) { _logger.AddMessage(LogSeverity.Error, "IOException", ioEx); }
+			catch (IOException iEx) { _logger.AddMessage(LogSeverity.Error, "IOException", iEx); }
 			catch (Exception ex) { _logger.AddMessage(LogSeverity.Error, "Exception", ex); }
 		}
 
