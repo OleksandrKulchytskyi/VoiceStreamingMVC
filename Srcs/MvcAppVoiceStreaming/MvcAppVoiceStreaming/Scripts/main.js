@@ -9,17 +9,15 @@ if (Modernizr.audio) {
 		return !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
 				  navigator.mozGetUserMedia || navigator.msGetUserMedia);
 	}
-
-	console.log(jQuery.browser);
-
+	
 	navigator.getUserMedia ||
 	(navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
 
 	if (navigator.getUserMedia) {
 
-		console.log(navigator.userAgent);
 		var ua = $.browser;
 		console.log(ua);
+
 		if (ua.chrome) {
 			//navigator.getUserMedia({ video: false, audio: true}, onSuccess, onError);
 			navigator.webkitGetUserMedia({ audio: true }, function (stream) {
