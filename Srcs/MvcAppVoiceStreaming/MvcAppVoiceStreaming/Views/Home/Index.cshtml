@@ -2,9 +2,9 @@
 	ViewBag.Title = "Home Page";
 }
 @section Scripts{
+	@Scripts.Render("~/bundles/detect")
 	@Scripts.Render("~/bundles/main")
 	@Scripts.Render("~/bundles/recorder")
-	@Scripts.Render("~/bundles/fileDownload")
 }
 @section featured {
 	<section class="featured">

@@ -276,12 +276,12 @@
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Compile Include="Infrastructure\NInjectDependencyScope.cs" />
+    <Content Include="Scripts\detect.min.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery-ui-1.9.2.js" />
     <Content Include="Scripts\jquery-ui-1.9.2.min.js" />
-    <Content Include="Scripts\jQuery.fileDownload.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
@@ -336,7 +336,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\Audio\" />
-    <Folder Include="Scripts\Recorder\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

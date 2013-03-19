@@ -11,12 +11,12 @@ namespace MvcAppVoiceStreaming
 			bundles.Add(new ScriptBundle("~/bundles/main").Include(
 						"~/Scripts/main.js"));
 
-			bundles.Add(new ScriptBundle("~/bundles/fileDownload").Include(
-						"~/Scripts/jQuery.fileDownload.js"));
-
 			bundles.Add(new ScriptBundle("~/bundles/recorder").Include(
 						"~/recorder.js",
 						"~/recorderWorker.js"));
+
+			bundles.Add(new ScriptBundle("~/bundles/detect").Include(
+						"~/Scripts/detect.min.js"));
 
 			bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
 						"~/Scripts/jquery-{version}.js"));

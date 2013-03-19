@@ -1,4 +1,8 @@
-﻿if (Modernizr.audio) {
+﻿var rec = undefined;
+var recGuid = undefined;
+var timerInvocation = 0;
+
+if (Modernizr.audio) {
 
 	function hasGetUserMedia() {
 		// Note: Opera is unprefixed.
@@ -6,16 +10,41 @@
 				  navigator.mozGetUserMedia || navigator.msGetUserMedia);
 	}
 
-	var rec = undefined;
-	var recGuid = undefined;
-	var timerInvocation = 0;
+	console.log(jQuery.browser);
 
 	navigator.getUserMedia ||
 	(navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
 
 	if (navigator.getUserMedia) {
-		//navigator.getUserMedia({ video: false, audio: true}, onSuccess, onError);
-		navigator.webkitGetUserMedia({ audio: true }, callback);
+
+		console.log(navigator.userAgent);
+		var ua = $.browser;
+		console.log(ua);
+		if (ua.chrome) {
+			//navigator.getUserMedia({ video: false, audio: true}, onSuccess, onError);
+			navigator.webkitGetUserMedia({ audio: true }, function (stream) {
+				try {
+					var context = new webkitAudioContext();
+					var mediaStreamSource = context.createMediaStreamSource(stream);
+					rec = new Recorder(mediaStreamSource);
+				} catch (e) {
+					alert(e.message);
+				}
+			});
+		}
+		else if(ua.mozzila)
+		{
+			navigator.mozGetUserMedia({ audio: true }, function (stream) {
+				try {
+					var context = new webkitAudioContext();
+					var mediaStreamSource = context.createMediaStreamSource(stream);
+					rec = new Recorder(mediaStreamSource);
+				} catch (e) {
+					alert(e.message);
+				}
+			});
+		}
+
 	} else {
 		alert('getUserMedia is not supported in this browser.');
 	}
@@ -26,16 +55,6 @@
 
 	function onError() {
 		alert('There has been a problem retrieving the streams - did you allow access?');
-	}
-
-	function callback(stream) {
-		try {
-			var context = new webkitAudioContext();
-			var mediaStreamSource = context.createMediaStreamSource(stream);
-			rec = new Recorder(mediaStreamSource);
-		} catch (e) {
-			alert(e.message);
-		}
 	}
 
 	$("#download").attr("disabled", "disabled");
