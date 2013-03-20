@@ -62,10 +62,6 @@
 								}
 								$('#audioSec').show();
 							}
-							//var context = new mozAudioContext();
-							//var mediaStreamSource = context.createMediaStreamSource(localMediaStream);
-							//rec = new Recorder(localMediaStream);
-							//console.log("Recorder is initialized.");
 						} catch (e) {
 							console.log(e);
 							alert(e.message);
