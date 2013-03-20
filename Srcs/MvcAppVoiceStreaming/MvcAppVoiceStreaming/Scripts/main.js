@@ -2,18 +2,22 @@
 	if (Modernizr.audio) {
 		var rec;
 		var recGuid;
-		var timerInvocation = 0;
+		var timerInvocation = 0,
+			buffers = [],
+			audio2 = new Audio();
 
 		function hasGetUserMedia() {
 			// Note: Opera is unprefixed.
 			return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
 		}
 
-		window.AudioContext ||
-		(window.AudioContext = window.mozAudioContext || window.webkitAudioContext || window.msAudioContext || window.oAudioContext);
+		$('#audioSec').hide();
 
 		navigator.getUserMedia ||
 		(navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
+
+		window.AudioContext ||
+		(window.AudioContext = window.mozAudioContext || window.webkitAudioContext || window.msAudioContext || window.oAudioContext);
 
 		if (navigator.getUserMedia) {
 			//get useragent settings
@@ -21,7 +25,7 @@
 			console.log(ua);
 
 			if (ua.chrome) {
-					navigator.webkitGetUserMedia({ video: false, audio: true }, function (stream) {
+				navigator.webkitGetUserMedia({ video: false, audio: true }, function (stream) {
 					try {
 						var context = new webkitAudioContext();
 						var mediaStreamSource = context.createMediaStreamSource(stream);
@@ -35,36 +39,33 @@
 			else if (ua.mozilla) {
 				console.log("Mozilla is defined.");
 				try {
-					navigator.mozGetUserMedia({ video: false, audio: true }, function (localMediaStream) {
+					navigator.mozGetUserMedia({ audio: true }, function (localMediaStream) {
 						try {
-
-							//if (!window.AudioContext) {
-							//	if (!window.webkitAudioContext) {
-							//		throw new Error('1). AudioContext not supported. :(');
-							//		return;
-							//	}
-							//	window.AudioContext = window.webkitAudioContext;
-							//	console.log("First step was success.");
-							//}
-
 							console.log("In try block.");
-							//if (typeof AudioContext == "function") {
-							//	console.log("AudioContext");
-							//	context = new AudioContext();
-							//} else if (typeof webkitAudioContext == "function") {
-							//	console.log("webkitAudioContext");
-							//	context = new webkitAudioContext();
-							//} else if (typeof mozAudioContext == "function") {
-							//	console.log("mozAudioContext");
-							//	context = new mozAudioContext();
-							//}
-							//else {
-							//	throw new Error('AudioContext not supported. :(');
-							//}
-							var context = new AudioContext();
-							var mediaStreamSource = context.createMediaStreamSource(localMediaStream);
-							rec = new Recorder(mediaStreamSource);
-							console.log("Recorder is initialized.");
+
+							var audion = $("#myAudio");
+							if (!audion) {
+								throw new Error("Fail to find audio element <audio>.");
+							}
+							else {
+								if (audion.mozSrcObject !== undefined) {
+									console.log("mozSrcObject is set.");
+									audion.mozSrcObject = localMediaStream;
+								} else {
+									console.log("src is set.");
+									audion.src = (window.URL && window.URL.createObjectURL(localMediaStream)) || localMediaStream;
+								}
+								var a1 = document.getElementById('myAudio');
+								if (a1) {
+									console.log("a1 id defined.");
+									a1.addEventListener('MozAudioAvailable', mozAudioAvailable, false);
+								}
+								$('#audioSec').show();
+							}
+							//var context = new mozAudioContext();
+							//var mediaStreamSource = context.createMediaStreamSource(localMediaStream);
+							//rec = new Recorder(localMediaStream);
+							//console.log("Recorder is initialized.");
 						} catch (e) {
 							console.log(e);
 							alert(e.message);
@@ -82,9 +83,35 @@
 			alert('getUserMedia is not supported in this browser.');
 		}
 
+		function mozAudioAvailable(event) {
+			var raw = document.getElementById('raw');
+			var frameBuffer = event.frameBuffer;
+			var t = event.time;
+			var text = "Samples at: " + t + "\n";
+			text += frameBuffer[0] + "  " + frameBuffer[1];
+			raw.innerHTML = text;
+			mozWriteAudio(frameBuffer);
+		}
+
+		function mozWriteAudio(audio) {
+			buffers.push(audio);
+
+			// If there's buffered data, write that
+			while (buffers.length > 0) {
+				var buffer = buffers.shift();
+				var written = audio2.mozWriteAudio(buffer);
+				// // If all data wasn't written, keep it in the buffers:
+				if (written < buffer.length) {
+					buffers.unshift(buffer.slice(written));
+					return;
+				}
+			}
+		}
+
 		function onSuccess() {
 			alert('Successful!');
 		}
+
 
 		function onError() {
 			alert('There has been a problem retrieving the streams - did you allow access?');
@@ -135,7 +162,7 @@
 					headers: { "recordId": recGuid }, //,"Content-Type": "application/octet-stream" },
 					data: blobData,
 					processData: false,
-					contentType: "audion/wav",
+					contentType: "audio/wav",
 					success: function (reponse) {
 						console.log("Record has been successfully sent to the backend.");
 					}
